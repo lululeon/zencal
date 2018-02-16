@@ -41,3 +41,29 @@ h1,h2,h3,.caption {
 .zcal-add-form {
   width: 400px;
 }
+/* panels*/
+.col-3.zcal-userpanel {
+  height: 90vh;
+}
+
+
+/* calendar */
+.zcal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 14fr);
+  grid-template-rows: repeat(6, 12vh);
+}
+.zcal-cell {
+  border: 1px solid #4b9dbb;
+  border-radius: 5px;
+  font-weight: 450;
+  color: #17a2b8;
+}
+.zcal-cell:hover {
+  background-color: #61a9c3;
+  color: #ffffff;
+}
+.zcal-cell.inactive {
+  color: #76b3dc;
+  border: 1px dotted;
+}
