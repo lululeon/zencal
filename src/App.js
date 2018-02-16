@@ -17,6 +17,8 @@ const CalendarEvent = ({ evt }) => {
 class App extends Component {
   constructor(props) {
     super(props);
+    this.dbRef = null;
+    this.throttle = true;
     this.state = {
       alertType: 'info', //danger|warning|info
       alertMessage: '',
@@ -28,12 +30,35 @@ class App extends Component {
 
   componentDidMount = () => {
     /* Create reference to the events in the  Firebase Database */
-    let evtsRef = fire.database().ref('events').orderByKey().limitToLast(100);
-    evtsRef.on('child_added', newEvt => {
-      /* Update React state when an event is added at the Firebase Database */
-      let evt = { ...newEvt, id: newEvt.key };
-      this.setState({ events: [...this.state.events, evt] });
+    this.dbRef = fire.database().ref('events').orderByChild('startdatetime').limitToLast(100); //get the latest 100
+
+    /* Pull data */
+    this.dbRef.once('value', snapshot => {//'once' instead of 'on' listener... else gets hella noisy in here.
+      let responsedata = snapshot.val();
+      let evts = [];
+
+      //because what we *actually* get back from val() is a list of <key, object> items... ??
+      for (let key in responsedata) {
+        evts.push({
+          ...responsedata[key],
+          key
+        });
+      }      
+      this.setState({ events: evts });
     });
+
+    //listen for adds
+    this.addListenerRef = this.dbRef.on('child_added', newEvt => {
+      if(!this.throttle) this.setState({ events: [...this.state.events, newEvt] });
+    });
+
+    this.clearThrottle();
+  }
+
+  clearThrottle = () => {
+    setTimeout(() => {
+      this.throttle = false;
+    }, 3000);
   }
 
   clearAlert = () => {
@@ -74,15 +99,6 @@ class App extends Component {
 
     //save or reject submission.
     if (valid) {
-      //stop saving to state and now save to the cloud:
-      /*       
-      let finalevents = [...this.state.events, evt];
-      this.setState({
-        alertType: 'info',
-        alertMessage: 'Saving...',
-        events: finalevents
-      }, this.clearAlert);
-      */
       fire.database().ref('events').push( evt );
     } else {
       this.setState({
@@ -90,6 +106,12 @@ class App extends Component {
         alertMessage: 'Please update your event'
       }, this.clearAlert);
     }
+  }
+
+  updateEvent = (e) => {
+    e.preventDefault();
+    let evt = this.state.currentEvent;
+    fire.database().ref('events/' + evt.key).set({...evt});
   }
 
   render() {
