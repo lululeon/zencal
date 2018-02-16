@@ -45,6 +45,9 @@ h1,h2,h3,.caption {
 .col-3.zcal-userpanel {
   height: 90vh;
 }
+.col-3.zcal-userpanel .alert {
+  margin-left: -15px;
+}
 
 
 /* calendar */
@@ -81,3 +84,19 @@ h1,h2,h3,.caption {
 .zcal-evt:hover {
   background-color: #add;
 }
+
+/*detail */
+.zcal-detailviewpane {
+  margin: 1em 0;
+}
+
+.col-3.zcal-userpanel .card.zcal-detail {
+  margin: 1em 0 0.5em -15px;
+}
+.col-3.zcal-userpanel .card.zcal-detail .card-body .card-title {
+  font-size: 1em;
+}
+.col-3.zcal-userpanel .card.zcal-detail .card-body .card-text {
+  font-size: 0.8em;
+}
+

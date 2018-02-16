@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import EventCell from './EventCell';
 
 export default class CalendarGrid extends Component {
   constructor(props) {
@@ -6,7 +7,8 @@ export default class CalendarGrid extends Component {
     this.state = {
       startdate: new Date('2018-02-01T00:00:00'), //this.props.startdate,
       enddate: new Date('2018-02-28T00:00:00'), //this.props.enddate,
-      cells: []
+      cells: [],
+      showDetail:false
     };
     this.events = this.props.events || [];
     this.introdays = 7 - this.state.startdate.getDay(); // *idx* at cell prior to first day of month
@@ -39,7 +41,7 @@ export default class CalendarGrid extends Component {
 
     //TODO: filter to time window only
     let evts = this.events.map((e) => {
-      return ({ sdt: new Date(e.startdatetime), ...e });
+      return ({ sdt: new Date(e.startdatetime), edt: new Date(e.enddatetime), ...e });
     });
     let numEvents = evts.length;
 
@@ -54,8 +56,7 @@ export default class CalendarGrid extends Component {
           while(j<numEvents) {
             let evtDate = evts[j].sdt.getDate();
             if(evtDate === d) { //if an evt occurs on Nth day of month, and we're on cell for day N, display the event(s)!
-              eventCells.push(<div className="zcal-evt" key={evts[j].key}>{evts[j].title}</div>);
-              console.log("*********** evtDate, actualDate", evtDate, d, "MATCHED!");
+              eventCells.push(<EventCell key={evts[j].key} evt={evts[j]} propagateClick={this.props.propagateClick} />);
               j++;
             } else {
               break;  //no more matches, so bail; return to advancing through display cell matrix

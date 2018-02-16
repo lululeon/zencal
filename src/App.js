@@ -1,19 +1,8 @@
 import React, { Component } from 'react';
 import AddEventForm from './components/AddEventForm';
 import CalendarGrid from './components/CalendarGrid';
+import DetailBox from './components/DetailBox';
 import fire from './utils/firebase';
-
-// const CalendarEvent = ({ evt }) => {
-//   return (
-//     <div>
-//       <h3>{evt.title}</h3>
-//       <p>{evt.startdatetime}</p>
-//       <p>{evt.enddatetime}</p>
-//       <p>{evt.category}</p>
-//     </div>
-//   );
-// };
-
 
 class App extends Component {
   constructor(props) {
@@ -23,7 +12,7 @@ class App extends Component {
     this.state = {
       alertType: 'info', //danger|warning|info
       alertMessage: '',
-      currentEvent: {},
+      currentEvent: null,
       events: [],
       addingEvent: false
     };
@@ -73,7 +62,7 @@ class App extends Component {
   }
 
   cancelAddEvent = () => {
-    this.setState({ addingEvent: false });
+    this.setState({ addingEvent: false, currentEvent:null });
   }
 
   handleEventEdits = (evt) => {
@@ -114,6 +103,16 @@ class App extends Component {
     fire.database().ref('events/' + evt.key).set({ ...evt });
   }
 
+  onCalendarEventClick = (evt) => {
+    this.setState({
+      currentEvent: evt
+    }, this.clearAlert);
+  }
+
+  dismissEvent = () => {
+    this.setState({currentEvent:null});
+  }
+
   render() {
     //let eventList = this.state.events.map((evt, idx) => <CalendarEvent evt={evt} key={idx} />);
     return (
@@ -131,6 +130,15 @@ class App extends Component {
                 {this.state.alertMessage}
               </div>
             ) : null}
+            {(this.state.currentEvent) ? (
+              <div className="zcal-detailviewpane">
+                <DetailBox event={this.state.currentEvent} />
+                <div className="row btn-toolbar zcal-controls" role="toolbar">
+                  <button type="button" className="btn btn-light" onClick={this.dismissEvent}>Cancel</button>
+                  <button type="button" className="btn btn-info" onClick={this.editEvent}>Edit Event</button>
+                </div>
+              </div>
+            ):null}
             <div className="row zcal-controls">
               <button type="button" className="btn btn-info" onClick={this.beginAddEvent}>Add a new event</button>
             </div>
@@ -150,7 +158,7 @@ class App extends Component {
             <div className="row zcal-header">
               <h1>Your Schedule</h1>
             </div>
-            <CalendarGrid events={this.state.events}/>
+            <CalendarGrid events={this.state.events} propagateClick={this.onCalendarEventClick} />
           </div>
         </div>
       </div>
