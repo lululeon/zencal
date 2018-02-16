@@ -6,85 +6,82 @@ export default class CalendarGrid extends Component {
     this.state = {
       startdate: new Date('2018-02-01T00:00:00'), //this.props.startdate,
       enddate: new Date('2018-02-28T00:00:00'), //this.props.enddate,
-      events: this.props.events //TODO: must be filtered to fit current time window and ORDERED.
+      cells: []
     };
-    this.cells = [];
+    this.events = this.props.events || [];
+    this.introdays = 7 - this.state.startdate.getDay(); // *idx* at cell prior to first day of month
+    this.displayDays = 41; //6 rows (weeks) displayed on mthly calendars usually, therefore 6x7 days = 42, i.e. 0..41
+    this.outrodaysStart = this.state.enddate.getDate() + this.introdays + 1; //cell at last valid day of month
     this.buildCells();
   }
 
+  componentWillReceiveProps = (nextprops) => {
+    if(this.events !== nextprops.events) {
+      console.log('--- new props!');
+      this.events = nextprops.events;
+      let newcells = this.buildCells();
+      this.setState({cells: newcells});
+    }
+  }
   buildCells = () => {
     //0=sunday, 1=mon...
     // let wkdaynums[0,1,2,3,4,5,6];
     // let D = 6; //max days in 0..6
-    let introdays = 7 - this.state.startdate.getDay(); // *idx* at cell prior to first day of month
-    let displayDays = 41; //6 rows (weeks) displayed on mthly calendars usually, therefore 6x7 days = 42, i.e. 0..41
-    let outrodaysStart = this.state.enddate.getDate() + introdays + 1; //cell at last valid day of month
+    let introdays = this.introdays;
+    let displayDays = this.displayDays;
+    let outrodaysStart = this.outrodaysStart;
     // let W = 5 //max number of display weeks is 6 (0...5).
     // let w = 0 //display week (0..W)
-    let L = this.state.enddate.getDate(); // last day of the month is the Lth day out of 0..31.
+    // let L = this.state.enddate.getDate(); // last day of the month is the Lth day out of 0..31.
     let d = 0; //day of the month
     let i = 0; //index display cells
+    let j = 0; //index events list
 
+    //TODO: filter to time window only
+    let evts = this.events.map((e) => {
+      return ({ sdt: new Date(e.startdatetime), ...e });
+    });
+    let numEvents = evts.length;
+
+    let cells = [];
+    let eventCells = [];    
     while (i <= displayDays) {//there are bunch of cells to display, regardless. loop thru 'em.
       let stylestr = '';
       if( (i > introdays) && (i < outrodaysStart) ) {//and some of these cells are relevant to the current month. css 'active'.
         stylestr = 'active';
         d++;
+        if (j < numEvents) {//safely check if we have matching events
+          while(j<numEvents) {
+            let evtDate = evts[j].sdt.getDate();
+            if(evtDate === d) { //if an evt occurs on Nth day of month, and we're on cell for day N, display the event(s)!
+              eventCells.push(<div className="zcal-evt" key={evts[j].key}>{evts[j].title}</div>);
+              console.log("*********** evtDate, actualDate", evtDate, d, "MATCHED!");
+              j++;
+            } else {
+              break;  //no more matches, so bail; return to advancing through display cell matrix
+            }
+          }
+        }
       } else {
         stylestr = 'inactive';
       }
-      this.cells.push(
-        <div className={`zcal-cell ${stylestr}`}>
+      cells.push(
+        <div className={`zcal-cell ${stylestr}`} key={i}>
           {d}
+          {eventCells}
         </div>
       );
+      eventCells = [];
       i++;
-    }
-  }
+    }//end while
 
-  buildContent = () => {
-    let j = 0; //index events list
-    let evts = this.state.events.map((e) => {
-      console.log('###',e);
-      return ({ sdt: new Date(e.startdatetime), ...e });
-    });
-    console.log(evts);
-
-  // let numEvents = evts.length;
-  // while (i <= displayDays) {//there are bunch of cells to display, regardless. loop thru 'em.
-  // let stylestr = '';
-  // let eventsContent = [];
-  // if( (i > introdays) && (i < outrodaysStart) ) {//and some of these cells are relevant to the current month. css 'active'.
-  //   stylestr = 'active';
-  //   d++;
-  //   break;
-  //   if (j < numEvents) {//safely check if we have matching events
-  //     while(j<numEvents) {
-  //       if(evts[j].sdt.getDate() == d) { //if an evt occurs on Nth day of month, and we're on cell for day N, display the event(s)!
-  //         eventsContent.push(<p>{evts[j].title}</p>);
-  //         j++;
-  //       } else {
-  //         break;  //no more matches, so bail; return to advancing through display cell matrix
-  //       }
-  //     }
-  //   }
-  // } else {
-  //   stylestr = 'inactive';
-  // }
-  // {(d>0 && d<=L)? ({d}) : (<span>{i}</span>) }
-  //   this.cells.push(
-  //     <div class={`zcal-cell ${stylestr}`}>
-  //       Hello {eventsContent}
-  //     </div>
-  //   );
-  // }
+    return(cells);
   }
 
   render() {
-    this.buildContent();
     return (
       <div className="zcal-grid">
-        {this.cells}
+        {this.state.cells}
       </div>
     );
   }

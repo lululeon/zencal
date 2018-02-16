@@ -58,12 +58,26 @@ h1,h2,h3,.caption {
   border-radius: 5px;
   font-weight: 450;
   color: #17a2b8;
+  overflow: hidden;
 }
 .zcal-cell:hover {
+  cursor: pointer;
   background-color: #61a9c3;
   color: #ffffff;
 }
 .zcal-cell.inactive {
   color: #76b3dc;
   border: 1px dotted;
+}
+.zcal-evt {
+  /* border: 1px solid white; */
+  border-radius: 5px;
+  padding: 5px;
+  background: #e1f3f3;
+  margin: 2px;
+  font-size: 0.75em;
+  color: #17a2b8;
+}
+.zcal-evt:hover {
+  background-color: #add;
 }

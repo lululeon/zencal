@@ -79,7 +79,6 @@ class App extends Component {
   handleEventEdits = (evt) => {
     let newEdits = Object.assign(this.state.currentEvent, evt);
     this.setState({ currentEvent: newEdits });
-    console.log(this.state.currentEvent);
   }
 
   validateEvent = (e) => {
