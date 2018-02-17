@@ -7,7 +7,6 @@ export default class EventCell extends Component {
   }
 
   showDetail = () => {
-    console.log('hello! I have key', this.state.key);
     this.props.propagateClick(this.state);
   }
 

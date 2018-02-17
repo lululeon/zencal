@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import AddEventForm from './components/AddEventForm';
 import CalendarGrid from './components/CalendarGrid';
 import DetailBox from './components/DetailBox';
 import fire from './utils/firebase';
@@ -14,7 +13,14 @@ class App extends Component {
       alertMessage: '',
       currentEvent: null,
       events: [],
+      editingEvent: false,
       addingEvent: false
+    };
+    this.emptyEvent = {
+      title:'Event name',
+      startdatetime:'1970-01-01T00:00:00',
+      enddatetime:'1970-01-01T00:00:00',
+      category:'General Appointment'
     };
   }
 
@@ -23,7 +29,7 @@ class App extends Component {
     this.dbRef = fire.database().ref('events').orderByChild('startdatetime').limitToLast(100); //get the latest 100
 
     /* Pull data */
-    this.dbRef.once('value', snapshot => {//'once' instead of 'on' listener... else gets hella noisy in here.
+    this.dbRef.on('value', snapshot => {//'once' instead of 'on' listener... else gets hella noisy in here.
       let responsedata = snapshot.val();
       let evts = [];
 
@@ -34,11 +40,19 @@ class App extends Component {
           key
         });
       }
+
+      //because firebase doesn't actually sort anything, inspite of instructions to do so and an index to boot... GRRR!!!
+      evts.sort((a,b) => {
+        let rtnval = (a.startdatetime.localeCompare(b.startdatetime) < 0) ? -1 : 1;
+        // console.log( 'comparing', a.startdatetime, 'against', b.startdatetime, 'yields:', rtnval);
+        return (rtnval);
+      });
+
       this.setState({ events: evts });
     });
 
     //listen for adds
-    this.addListenerRef = this.dbRef.on('child_added', newEvt => {
+    this.dbRef.on('child_added', newEvt => {
       if (!this.throttle) this.setState({ events: [...this.state.events, newEvt] });
     });
 
@@ -61,34 +75,19 @@ class App extends Component {
     this.setState({ addingEvent: true });
   }
 
-  cancelAddEvent = () => {
+  dismissEvent = () => {
     this.setState({ addingEvent: false, currentEvent:null });
   }
 
-  handleEventEdits = (evt) => {
-    let newEdits = Object.assign(this.state.currentEvent, evt);
-    this.setState({ currentEvent: newEdits });
-  }
-
-  validateEvent = (e) => {
-    e.preventDefault();
+  validateEvent = (evt) => {
     let valid = false;
-
-    // let evt = this.state.currentEvent;
-
-    //dummy evt for now
-    let evt = {
-      title: 'An amazing thing will happen',
-      startdatetime: '2018-02-23T13:30:00.000',
-      enddatetime: '2018-02-23T15:00:00.000',
-      category: 'business',
-    };
-
     valid = true;
+
+    //TODO: validation
 
     //save or reject submission.
     if (valid) {
-      fire.database().ref('events').push(evt);
+      this.saveEvent(evt);
     } else {
       this.setState({
         alertType: 'warning',
@@ -97,20 +96,25 @@ class App extends Component {
     }
   }
 
-  updateEvent = (e) => {
-    e.preventDefault();
-    let evt = this.state.currentEvent;
-    fire.database().ref('events/' + evt.key).set({ ...evt });
+  saveEvent = (evt) => {
+    console.log('*** adding...', evt);
+    fire.database().ref('events').push({title:evt.title, startdatetime:evt.startdatetime, enddatetime:evt.enddatetime, category:evt.category });
+  }
+
+  updateEvent = (evt) => {
+    console.log('*** updating...', evt);
+    fire.database().ref('events/' + evt.key).set({ title:evt.title, startdatetime:evt.startdatetime, enddatetime:evt.enddatetime, category:evt.category });
+  }
+
+  deleteEvent = (evt) => {
+    console.log('*** deleting...', evt);
+    fire.database().ref('events/' + evt.key).remove();
   }
 
   onCalendarEventClick = (evt) => {
     this.setState({
-      currentEvent: evt
+      currentEvent: evt,
     }, this.clearAlert);
-  }
-
-  dismissEvent = () => {
-    this.setState({currentEvent:null});
   }
 
   render() {
@@ -118,7 +122,7 @@ class App extends Component {
     return (
       <div className="container zcal-app">
         <div className="row align-items-start">
-          <div className="col-3 zcal-userpanel">
+          <div className="col-4 zcal-userpanel">
             <div className="row zcal-header">
               <h1>Zen Cal</h1>
             </div>
@@ -132,29 +136,21 @@ class App extends Component {
             ) : null}
             {(this.state.currentEvent) ? (
               <div className="zcal-detailviewpane">
-                <DetailBox event={this.state.currentEvent} />
-                <div className="row btn-toolbar zcal-controls" role="toolbar">
-                  <button type="button" className="btn btn-light" onClick={this.dismissEvent}>Cancel</button>
-                  <button type="button" className="btn btn-info" onClick={this.editEvent}>Edit Event</button>
-                </div>
+                <DetailBox event={this.state.currentEvent} onDismiss={this.dismissEvent} onSave={this.updateEvent} onDelete={this.deleteEvent} />
               </div>
             ):null}
-            <div className="row zcal-controls">
-              <button type="button" className="btn btn-info" onClick={this.beginAddEvent}>Add a new event</button>
-            </div>
             {(this.state.addingEvent) ? (
-              <React.Fragment>
-                <div className="row zcal-add-panel">
-                  <AddEventForm notifyOnChange={this.handleEventEdits} />
-                </div>
-                <div className="row btn-toolbar zcal-controls" role="toolbar">
-                  <button type="button" className="btn btn-light" onClick={this.cancelAddEvent}>Cancel</button>
-                  <button type="button" className="btn btn-info" onClick={this.validateEvent}>Add to Calendar</button>
-                </div>
-              </React.Fragment>
+              <div className="zcal-detailviewpane">
+                <DetailBox event={this.emptyEvent} onDismiss={this.dismissEvent} onSave={this.saveEvent} onDelete={this.deleteEvent} newevent={true}/>
+              </div>
             ) : null}
+            {(!this.state.addingEvent && !this.state.currentEvent) ? (
+              <div className="row zcal-controls">
+                <button type="button" className="btn btn-info" onClick={this.beginAddEvent}>Add a new event</button>
+              </div>
+            ):null}
           </div>
-          <div className="col-9 zcal-viewpane">
+          <div className="col-8 zcal-viewpane">
             <div className="row zcal-header">
               <h1>Your Schedule</h1>
             </div>

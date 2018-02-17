@@ -1,10 +1,11 @@
 html { 
+  background: url('/gfx/bgimage2.jpg') no-repeat center center fixed; 
   background-color: #7899b98a;
-  /* background: url('/gfx/bgimage.jpg') no-repeat center center fixed; 
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
-  background-size: cover; */
+  background-size: cover;
+  background-blend-mode: screen;
 }
 body {
   /* font-family: 'Raleway', sans-serif; */
@@ -77,9 +78,11 @@ h1,h2,h3,.caption {
   border-radius: 5px;
   padding: 5px;
   background: #e1f3f3;
-  margin: 2px;
+  margin: 3px;
   font-size: 0.75em;
   color: #17a2b8;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .zcal-evt:hover {
   background-color: #add;
@@ -87,9 +90,8 @@ h1,h2,h3,.caption {
 
 /*detail */
 .zcal-detailviewpane {
-  margin: 1em 0;
+  margin: 1em 0 1em -15px;
 }
-
 .col-3.zcal-userpanel .card.zcal-detail {
   margin: 1em 0 0.5em -15px;
 }
@@ -99,4 +101,9 @@ h1,h2,h3,.caption {
 .col-3.zcal-userpanel .card.zcal-detail .card-body .card-text {
   font-size: 0.8em;
 }
-
+.zcal-controls button.btn {
+  margin: 0 0 0 10px;
+}
+.zcal-controls button.btn:not(:first-child) {
+  align-self: flex-end;
+}

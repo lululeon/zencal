@@ -39,7 +39,7 @@ export default class CalendarGrid extends Component {
     let i = 0; //index display cells
     let j = 0; //index events list
 
-    //TODO: filter to time window only
+    //FUTURE TODO: filter to time window only
     let evts = this.events.map((e) => {
       return ({ sdt: new Date(e.startdatetime), edt: new Date(e.enddatetime), ...e });
     });
@@ -55,6 +55,7 @@ export default class CalendarGrid extends Component {
         if (j < numEvents) {//safely check if we have matching events
           while(j<numEvents) {
             let evtDate = evts[j].sdt.getDate();
+            // console.log('==============', evts[j].startdatetime, evtDate, d, evts[j].title);
             if(evtDate === d) { //if an evt occurs on Nth day of month, and we're on cell for day N, display the event(s)!
               eventCells.push(<EventCell key={evts[j].key} evt={evts[j]} propagateClick={this.props.propagateClick} />);
               j++;
