@@ -1,12 +1,37 @@
 import React, {Component} from 'react';
+import DatePicker from 'react-datepicker';
+import TimePicker from 'react-bootstrap-time-picker';
+import * as moment from 'moment';
+import {makeDateTimeString} from '../utils/datemanip' ;
+
+import 'react-datepicker/dist/react-datepicker.css';
 
 export default class DetailBox extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      ...this.props.event,
-      editing:false
-    };
+    let _editing:false;
+    if(this.props.event) {
+      this.state = {
+        startdate: moment(this.props.event.startdatetime),
+        enddate: moment(this.props.event.enddatetime),
+        starttime: '00:00', //todo
+        endtime: '00:00',//todo
+        editing: _editing,
+        ...this.props.event
+      };
+    } else {
+      this.state = {
+        startdate: moment(),
+        enddate: moment(),
+        starttime: '00:00', //todo
+        endtime: '00:00',//todo
+        editing: _editing,
+        title: '',
+        startdatetime: moment().format('LL'),
+        enddatetime: moment().format('LL'),
+        category: 'General Appointment'
+      };
+    }
   }
 
   onInputChange = (e) => {
@@ -15,17 +40,26 @@ export default class DetailBox extends Component {
     tmpState[fieldName] = e.target.value;
     this.setState(tmpState);
   }
+
+  onStartDateChange = (date) => { this.setState({startdate: date});  }
+  onEndDateChange = (date) => { this.setState({enddate: date});  }
+
   startEdits = (e) => {
     e.preventDefault();
     this.setState({editing:true});
-
   }
 
   saveEdits = (e) => {
     e.preventDefault();
-    let evt = {key: this.state.key, title:this.state.title, startdatetime:this.state.startdatetime, enddatetime:this.state.enddatetime, category:this.state.category};
-    this.props.onSave(evt);
-    //this.props.onDismiss();
+    
+    //normalize:
+    let startdatetime = makeDateTimeString(this.state.startdate, this.state.starttime);
+    let enddatetime = makeDateTimeString(this.state.enddate, this.state.endtime);
+
+    //TODO
+
+    // let evt = {key: this.state.key, title:this.state.title, startdatetime:this.state.startdatetime, enddatetime:this.state.enddatetime, category:this.state.category};
+    // this.props.onSave(evt);
   }
 
   delete = (e) => {
@@ -39,6 +73,7 @@ export default class DetailBox extends Component {
     let labelCaption = (this.props.newevent) ? 'New Event: ' : 'Updating:' ;
     let labelAction = (this.props.newevent) ? 'Save' : 'Update Event';
     return (
+      
       <div className="card zcal-detail">
         {(this.state.editing || this.props.newevent)?(
           <form>
@@ -47,10 +82,21 @@ export default class DetailBox extends Component {
               <div className="card-text">
                 <label htmlFor="title">Event Title</label>
                 <input type="text" className="form-control" name="title" value={this.state.title} onChange={ this.onInputChange } />
-                <label htmlFor="startdatetime">Event Start</label>
-                <input type="text" className="form-control" name="startdatetime" value={this.state.startdatetime} onChange={ this.onInputChange } />
-                <label htmlFor="enddatetime">Event End</label>
-                <input type="text" className="form-control" name="enddatetime" value={this.state.enddatetime} onChange={ this.onInputChange } />
+                <label htmlFor="startdate">Event Start</label>
+                <DatePicker className="form-control" name="startdate"
+                  selected={this.state.startdate}
+                  onChange={this.onStartDateChange}
+                  dateFormat="LL"
+                />
+                <TimePicker start="00:00" end="23:59" step={5} name="starttime" onChange={this.onStartTimeChange}/>
+                {/*<input type="text" className="form-control" name="startdatetime" value={this.state.startdatetime} onChange={ this.onInputChange } />*/}
+                <label htmlFor="enddate">Event End</label>
+                <DatePicker className="form-control" name="enddate"
+                  selected={this.state.enddate}
+                  onChange={this.onEndDateChange}
+                  dateFormat="LL"
+                />
+                {/*<input type="text" className="form-control" name="enddatetime" value={this.state.enddatetime} onChange={ this.onInputChange } />*/}
                 <label htmlFor="title">Category</label>
                 <input type="text" className="form-control" name="category" value={this.state.category} onChange={ this.onInputChange } />
               </div>

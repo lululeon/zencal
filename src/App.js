@@ -17,12 +17,6 @@ class App extends Component {
       editingEvent: false,
       addingEvent: false
     };
-    this.emptyEvent = {
-      title:'',
-      startdatetime:'1970-01-01T00:00:00',
-      enddatetime:'1970-01-01T00:00:00',
-      category:'General Appointment'
-    };
   }
 
   componentDidMount = () => {
@@ -166,7 +160,7 @@ class App extends Component {
             ):null}
             {(this.state.addingEvent) ? (
               <div className="zcal-detailviewpane">
-                <DetailBox event={this.emptyEvent} onDismiss={this.dismissEvent} onSave={this.saveEvent} onDelete={this.deleteEvent} newevent={true}/>
+                <DetailBox event={null} onDismiss={this.dismissEvent} onSave={this.saveEvent} onDelete={this.deleteEvent} newevent={true}/>
               </div>
             ) : null}
             {(!this.state.addingEvent && !this.state.currentEvent) ? (
