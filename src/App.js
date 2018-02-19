@@ -28,8 +28,9 @@ class App extends Component {
     /* Create reference to the events in the  Firebase Database */
     this.dbRef = fire.database().ref('events').orderByChild('startdatetime').limitToLast(100); //get the latest 100
 
-    /* Pull data */
-    this.dbRef.on('value', snapshot => {//'once' instead of 'on' listener... else gets hella noisy in here.
+    /* Pull data - all events seem to additionally trigger value. Totally nonperformant, but for simplicity's sake using 'on' instead of 'once' for now:*/
+    this.dbRef.on('value', snapshot => {
+      //console.log('---value!!!', snapshot.val());
       let responsedata = snapshot.val();
       let evts = [];
 
@@ -50,19 +51,6 @@ class App extends Component {
 
       this.setState({ events: evts });
     });
-
-    //listen for adds
-    this.dbRef.on('child_added', newEvt => {
-      if (!this.throttle) this.setState({ events: [...this.state.events, newEvt] });
-    });
-
-    this.clearThrottle();
-  }
-
-  clearThrottle = () => {
-    setTimeout(() => {
-      this.throttle = false;
-    }, 3000);
   }
 
   clearAlert = () => {
@@ -118,7 +106,7 @@ class App extends Component {
   }
 
   render() {
-    //let eventList = this.state.events.map((evt, idx) => <CalendarEvent evt={evt} key={idx} />);
+    //let eventList = this.state.events.map((evt) => <p key={evt.key}>{evt.title}  </p>);
     return (
       <div className="container zcal-app">
         <div className="row align-items-start">

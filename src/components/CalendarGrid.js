@@ -19,12 +19,12 @@ export default class CalendarGrid extends Component {
 
   componentWillReceiveProps = (nextprops) => {
     if(this.events !== nextprops.events) {
-      console.log('--- new props!');
       this.events = nextprops.events;
       let newcells = this.buildCells();
       this.setState({cells: newcells});
     }
   }
+  
   buildCells = () => {
     //0=sunday, 1=mon...
     // let wkdaynums[0,1,2,3,4,5,6];
@@ -55,7 +55,6 @@ export default class CalendarGrid extends Component {
         if (j < numEvents) {//safely check if we have matching events
           while(j<numEvents) {
             let evtDate = evts[j].sdt.getDate();
-            // console.log('==============', evts[j].startdatetime, evtDate, d, evts[j].title);
             if(evtDate === d) { //if an evt occurs on Nth day of month, and we're on cell for day N, display the event(s)!
               eventCells.push(<EventCell key={evts[j].key} evt={evts[j]} propagateClick={this.props.propagateClick} />);
               j++;

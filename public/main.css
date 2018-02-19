@@ -27,8 +27,17 @@ h1,h2,h3,.caption {
   align-items: flex-end;
   padding: 0.5em;
 }
+.zcal-header h1 {
+  background: #70899447;
+  border-radius: 15px;
+  padding: 10px 20px;
+  mix-blend-mode: overlay;
+}
 .row.zcal-intro {
   padding-left: 0.5em;
+  color: white;
+  font-size: small;
+  padding: 0 2em 0 1.5em;
 }
 
 
@@ -80,6 +89,7 @@ h1,h2,h3,.caption {
   background: #e1f3f3;
   margin: 3px;
   font-size: 0.75em;
+  font-weight: normal;
   color: #17a2b8;
   overflow: hidden;
   white-space: nowrap;

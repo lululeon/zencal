@@ -1,18 +1,14 @@
 import React, { Component } from 'react';
 
 export default class EventCell extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {...this.props.evt };
-  }
 
   showDetail = () => {
-    this.props.propagateClick(this.state);
+    this.props.propagateClick(this.props.evt);
   }
 
   render(){
     return(
-      <div className="zcal-evt" key={this.state.key} onClick={this.showDetail}>{this.state.title}
+      <div className="zcal-evt" key={this.props.evt.key} onClick={this.showDetail}>{this.props.evt.title}
       </div>
     );
   }
