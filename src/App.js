@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import CalendarGrid from './components/CalendarGrid';
 import DetailBox from './components/DetailBox';
 import fire from './utils/firebase';
+import * as datemanip from './utils/datemanip';
 
 class App extends Component {
   constructor(props) {
@@ -17,7 +18,7 @@ class App extends Component {
       addingEvent: false
     };
     this.emptyEvent = {
-      title:'Event name',
+      title:'',
       startdatetime:'1970-01-01T00:00:00',
       enddatetime:'1970-01-01T00:00:00',
       category:'General Appointment'
@@ -64,38 +65,74 @@ class App extends Component {
   }
 
   dismissEvent = () => {
-    this.setState({ addingEvent: false, currentEvent:null });
+    this.setState({ addingEvent: false, currentEvent:null }, this.clearAlert);
   }
 
+  //TODO: this should be abstracted away into datemanip instance
   validateEvent = (evt) => {
-    let valid = false;
-    valid = true;
+    let errormsgs = [];
 
-    //TODO: validation
-
-    //save or reject submission.
-    if (valid) {
-      this.saveEvent(evt);
-    } else {
-      this.setState({
-        alertType: 'warning',
-        alertMessage: 'Please update your event'
-      }, this.clearAlert);
+    //>>> Input validations / sanity checks
+    if(evt.title.trim() === '') {
+      errormsgs.push('Please enter a brief title to describe your event.');
     }
+    if(!datemanip.isValidDate(evt.startdatetime)) errormsgs.push('The starting date or time is not valid - please correct and try again.');
+    if(!datemanip.isValidDate(evt.enddatetime)) errormsgs.push('The ending date or time is not valid - please correct and try again.');
+    if(errormsgs.length > 0) {
+      errormsgs = errormsgs.map( (e,k) => (<li key={k}>{e}</li>) );
+      this.setState({
+        alertType: 'danger',
+        alertMessage: (<div><p>Please correct these issues: </p><ul>{errormsgs}</ul></div>)
+      }, this.clearAlert);
+      return false;
+    }
+
+    //<<< input validations
+
+    //>>> Date validations
+    if( datemanip.isHistoricaldate(evt.startdatetime) || datemanip.isHistoricaldate(evt.enddatetime) ) {
+      this.setState({
+        alertType: 'danger',
+        alertMessage: 'Please ensure your event is not in the past! It must start and finish in the future.'
+      }, this.clearAlert);
+      return false;
+    }
+    if( datemanip.endIsAfterStart(evt.startdatetime) || datemanip.isHistoricaldate(evt.enddatetime) ) {
+      this.setState({
+        alertType: 'danger',
+        alertMessage: 'Your event finishes before it starts! Please correct when it starts / when it ends.'
+      }, this.clearAlert);
+      return false;
+    }
+    //<<<
+
+    return true;
   }
 
   saveEvent = (evt) => {
-    console.log('*** adding...', evt);
-    fire.database().ref('events').push({title:evt.title, startdatetime:evt.startdatetime, enddatetime:evt.enddatetime, category:evt.category });
+    // console.log('*** adding...', evt);
+    if(this.validateEvent(evt)){
+      fire.database().ref('events').push({title:evt.title, startdatetime:evt.startdatetime, enddatetime:evt.enddatetime, category:evt.category });
+      this.setState({
+        alertType: 'success',
+        alertMessage: 'New event added'
+      }, this.dismissEvent);
+    }
   }
 
   updateEvent = (evt) => {
-    console.log('*** updating...', evt);
-    fire.database().ref('events/' + evt.key).set({ title:evt.title, startdatetime:evt.startdatetime, enddatetime:evt.enddatetime, category:evt.category });
+    // console.log('*** updating...', evt);
+    if(this.validateEvent(evt)){
+      fire.database().ref('events/' + evt.key).set({ title:evt.title, startdatetime:evt.startdatetime, enddatetime:evt.enddatetime, category:evt.category });
+      this.setState({
+        alertType: 'success',
+        alertMessage: 'Event update'
+      }, this.dismissEvent);
+    }
   }
 
   deleteEvent = (evt) => {
-    console.log('*** deleting...', evt);
+    // console.log('*** deleting...', evt);
     fire.database().ref('events/' + evt.key).remove();
   }
 

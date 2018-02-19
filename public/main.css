@@ -42,6 +42,7 @@ h1,h2,h3,.caption {
 
 
 /* forms */
+.alert 
 .row.zcal-add-panel {
   background: white;
   padding: 2em;
@@ -52,10 +53,10 @@ h1,h2,h3,.caption {
   width: 400px;
 }
 /* panels*/
-.col-3.zcal-userpanel {
+.zcal-userpanel {
   height: 90vh;
 }
-.col-3.zcal-userpanel .alert {
+.zcal-userpanel .alert {
   margin-left: -15px;
 }
 

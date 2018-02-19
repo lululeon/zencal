@@ -22,11 +22,10 @@ export default class DetailBox extends Component {
   }
 
   saveEdits = (e) => {
-    //TODO: validations
     e.preventDefault();
     let evt = {key: this.state.key, title:this.state.title, startdatetime:this.state.startdatetime, enddatetime:this.state.enddatetime, category:this.state.category};
     this.props.onSave(evt);
-    this.props.onDismiss();
+    //this.props.onDismiss();
   }
 
   delete = (e) => {
